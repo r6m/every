@@ -62,7 +62,7 @@ func TestEvery_CronExpr(t *testing.T) {
 		{
 			"every-hour-in-Jun-on-Sun,Fri",
 			&Every{Every: "hour in Jun on Sun,Fri"},
-			"0 0 * Jun Sun,Fri",
+			"0 * * Jun Sun,Fri",
 			false,
 		},
 	}

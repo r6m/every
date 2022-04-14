@@ -104,7 +104,6 @@ func (e *Every) CronExpr() (string, error) {
 
 	groups, matched = regexMatchMap(reHour, e.Every)
 	if hourValue, ok := groups["hour"]; ok && matched {
-		hour = "0"
 		min = "0"
 		if hourValue != "" && hourValue != "1" {
 			hour = "*/" + strings.TrimSpace(hourValue)
