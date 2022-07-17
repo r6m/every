@@ -2,37 +2,7 @@ package every
 
 import (
 	"testing"
-
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 )
-
-func TestEvery_UnmarshalCaddyfile(t *testing.T) {
-	data := []byte(`
-	{
-		every 2 days at 12:30 AM {
-			run hello world
-			user ubuntu
-		}
-		every day at 01:45 PM {
-			run "gobackup perform -c /etc/gobackup.yml > /dev/null"
-			user ubuntu
-		}
-	}`)
-
-	blocks, err := caddyfile.Parse("Caddyfile", data)
-	if err != nil {
-		t.Error(err)
-	}
-
-	for _, s := range blocks[0].Segments {
-		d := caddyfile.NewDispenser(s)
-		config := new(Every)
-		if err := config.UnmarshalCaddyfile(d); err != nil {
-			t.Error("can't unmarshal every", err)
-		}
-
-	}
-}
 
 func TestEvery_CronExpr(t *testing.T) {
 	tests := []struct {

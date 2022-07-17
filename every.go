@@ -1,12 +1,11 @@
 package every
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"strings"
 	"time"
-
-	"github.com/caddyserver/caddy/v2/caddyconfig/caddyfile"
 )
 
 // every minute
@@ -24,8 +23,6 @@ import (
 // every 5 days
 
 var (
-	_ caddyfile.Unmarshaler = (*Every)(nil)
-
 	reMinute   = regexp.MustCompile(`(?i)^(?P<min>[0-5]?[0-9] )?(?:minutes|minute|min)`)
 	reHour     = regexp.MustCompile(`(?i)^(?P<hour>[1-2]?[0-9] )?(?:hours|hour)`)
 	reDay      = regexp.MustCompile(`(?i)^(?P<day>[1-3]?[0-9] )?(?:days|day)`)
@@ -34,60 +31,31 @@ var (
 	reAtTime   = regexp.MustCompile(`(?i)(?:at (?P<time>(?:(?:[1-9]|[1][0-2])|[0-2][0-3]:[0-5][0-9]) (?:am|pm)))`)
 )
 
-// Every block every block data
+type Config struct {
+	Cronfile string
+	Everies  []*Every `hcl:"every,block"`
+}
+
+// Every block data
 type Every struct {
-	Every string
-	User  string
-	Run   string
+	Every string `hcl:"every"`
+	User  string `hcl:"user"`
+	Run   string `hcl:"run"`
 }
 
-// ParseEveryfile parses everyfile data
-func ParseEveryfile(data []byte) ([]*Every, error) {
-	blocks, err := caddyfile.Parse("Caddyfile", data)
+func (e *Every) Cronjob() (string, error) {
+	if e.Run == "" {
+		return "", errors.New("run is empty")
+	}
+
+	expr, err := e.CronExpr()
 	if err != nil {
-		return nil, fmt.Errorf("can't parse file: %v", err)
+		return "", err
 	}
 
-	everies := make([]*Every, 0)
+	cronjob := expr + " " + e.Run
 
-	for _, b := range blocks {
-		for _, s := range b.Segments {
-			if s.Directive() == "every" {
-				e := new(Every)
-				d := caddyfile.NewDispenser(s)
-				if err := e.UnmarshalCaddyfile(d); err != nil {
-					return nil, fmt.Errorf("can't unmarshal every: %v", err)
-				}
-
-				everies = append(everies, e)
-			}
-		}
-	}
-
-	return everies, nil
-}
-
-// UnmarshalCaddyfile unmarshales Everyfile
-func (e *Every) UnmarshalCaddyfile(d *caddyfile.Dispenser) error {
-	for d.Next() {
-		key := d.Val()
-
-		switch key {
-		case "every":
-			args := d.RemainingArgs()
-			if len(args) == 0 {
-				return d.ArgErr()
-			}
-
-			e.Every = strings.Join(args, " ")
-		case "user":
-			d.Args(&e.User)
-		case "run":
-			e.Run = strings.Join(d.RemainingArgs(), " ")
-		}
-	}
-
-	return nil
+	return cronjob, nil
 }
 
 // CronExpr parses every expression to crontab expression
