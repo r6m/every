@@ -12,6 +12,7 @@ const (
 	crontabCommand = "crontab"
 )
 
+// WriteCrontab writes crontab
 func WriteCrontab(config *Config) error {
 	crontab, err := readCrontab()
 	if err != nil {
@@ -23,6 +24,7 @@ func WriteCrontab(config *Config) error {
 	return writeCrontab(crontab)
 }
 
+// UpdateCrontab returns updated crontab content
 func UpdateCrontab(crontab string, config *Config) (string, error) {
 	configPath, err := filepath.Abs(config.Path)
 	if err != nil {
@@ -65,6 +67,7 @@ func UpdateCrontab(crontab string, config *Config) (string, error) {
 	return crontab, nil
 }
 
+// readCrontab reads crontab content using crontab command
 func readCrontab() (string, error) {
 	args := []string{"-l"}
 
@@ -76,6 +79,7 @@ func readCrontab() (string, error) {
 	return string(output), nil
 }
 
+// writeCrontab writes crontab content using crontab command
 func writeCrontab(content string) error {
 	cmd := exec.Command(crontabCommand)
 	cmd.Stdin = strings.NewReader(content)
@@ -87,6 +91,7 @@ func writeCrontab(content string) error {
 	return nil
 }
 
+// CleanCrontab cleanup current Everyfile config fron crontab
 func CleanCrontab(config *Config) error {
 	crontab, err := readCrontab()
 	if err != nil {

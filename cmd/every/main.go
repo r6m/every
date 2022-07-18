@@ -116,6 +116,7 @@ func main() {
 	}
 }
 
+// exists checks for file existance
 func exists(name string) bool {
 	if _, err := os.Stat(name); errors.Is(err, fs.ErrNotExist) {
 		return false
@@ -123,6 +124,7 @@ func exists(name string) bool {
 	return true
 }
 
+// prompmYesNo performs a yes/no question
 func prompmYesNo(message string, v interface{}) error {
 	p := &survey.Confirm{
 		Message: message,

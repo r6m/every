@@ -13,11 +13,11 @@ import (
 
 // every minute
 // every hour
-// 			 hour at 30 minutes
+// 		hour at 30 minutes
 // every day at 3 am
-// 			 day at 3:10 pm
+// 		day at 3:10 pm
 // every Fri at 3 pm
-//       Mon,Fri
+// 		Mon,Fri
 // every month on Fri at 3 am
 // every 2 minutes
 // every 2 hours on Fri
@@ -34,11 +34,13 @@ var (
 	reAtTime   = regexp.MustCompile(`(?i)(?:at (?P<time>(?:(?:[1-9]|[1][0-2])|[0-2][0-3]:[0-5][0-9]) (?:am|pm)))`)
 )
 
+// Config represents Everyfile config
 type Config struct {
 	Path    string
 	Everies []*Every `hcl:"every,block"`
 }
 
+// Parse reads config file
 func Parse(name string) (*Config, error) {
 	bytes, err := os.ReadFile(name)
 	if err != nil {
@@ -61,6 +63,7 @@ type Every struct {
 	Run   string `hcl:"run"`
 }
 
+// Cronjob returns a crontab expression
 func (e *Every) Cronjob() (string, error) {
 	if e.Run == "" {
 		return "", errors.New("run is empty")
@@ -76,7 +79,7 @@ func (e *Every) Cronjob() (string, error) {
 	return cronjob, nil
 }
 
-// CronExpr parses every expression to crontab expression
+// CronExpr parses every to crontab time expression
 func (e *Every) CronExpr() (string, error) {
 	var min, hour, day, month, weekday = "*", "*", "*", "*", "*"
 
