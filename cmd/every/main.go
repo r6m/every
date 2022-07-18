@@ -92,7 +92,7 @@ func main() {
 }
 
 func exists(name string) bool {
-	if _, err := os.Stat("/path/to/file"); errors.Is(err, fs.ErrNotExist) {
+	if _, err := os.Stat(name); errors.Is(err, fs.ErrNotExist) {
 		return false
 	}
 	return true
