@@ -18,17 +18,16 @@ func WriteCrontab(config *Config) error {
 		return err
 	}
 
-	configPath, err := filepath.Abs(config.Path)
-	if err != nil {
-		return fmt.Errorf("can't get config absolute path: %v", err)
-	}
-
-	crontab, err = updateCrontab(crontab, configPath, config.Everies...)
+	crontab, err = UpdateCrontab(crontab, config)
 
 	return writeCrontab(crontab)
 }
 
-func updateCrontab(crontab string, configPath string, items ...*Every) (string, error) {
+func UpdateCrontab(crontab string, config *Config) (string, error) {
+	configPath, err := filepath.Abs(config.Path)
+	if err != nil {
+		return "", fmt.Errorf("can't get config absolute path: %v", err)
+	}
 
 	header := fmt.Sprintf("# Begin every generated jobs for %s", configPath)
 	footer := fmt.Sprintf("# End every generated jobs for %s", configPath)
@@ -42,8 +41,8 @@ func updateCrontab(crontab string, configPath string, items ...*Every) (string, 
 	buf.WriteString(header)
 	buf.WriteString("\n")
 
-	for _, item := range items {
-		cronjob, err := item.Cronjob()
+	for _, e := range config.Everies {
+		cronjob, err := e.Cronjob()
 		if err != nil {
 			return "", err
 		}
@@ -61,6 +60,7 @@ func updateCrontab(crontab string, configPath string, items ...*Every) (string, 
 
 	crontab += "\n\n"
 	crontab += buf.String()
+	crontab += "\n\n"
 
 	return crontab, nil
 }
