@@ -83,7 +83,13 @@ func (e *Every) Cronjob() (string, error) {
 		return "", err
 	}
 
-	cronjob := expr + " " + e.Run
+	cronjob := expr
+
+	if e.User != "" {
+		cronjob += " " + e.User
+	}
+
+	cronjob += " " + e.Run
 
 	return cronjob, nil
 }
