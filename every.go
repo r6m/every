@@ -3,9 +3,12 @@ package every
 import (
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/hcl"
 )
 
 // every minute
@@ -32,8 +35,23 @@ var (
 )
 
 type Config struct {
-	Cronfile string
-	Everies  []*Every `hcl:"every,block"`
+	Path    string
+	Everies []*Every `hcl:"every,block"`
+}
+
+func Parse(name string) (*Config, error) {
+	bytes, err := os.ReadFile(name)
+	if err != nil {
+		return nil, fmt.Errorf("can't read config file '%s': %v", name, err)
+	}
+
+	config := new(Config)
+	if err := hcl.Unmarshal(bytes, config); err != nil {
+		return nil, fmt.Errorf("can't parse file '%s': %v", name, err)
+	}
+
+	config.Path = name
+	return config, nil
 }
 
 // Every block data
