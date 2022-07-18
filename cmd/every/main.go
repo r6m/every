@@ -35,8 +35,9 @@ type Every struct {
 
 func main() {
 	app := &cli.App{
-		Name:  "every",
-		Usage: "Every command transles english to crontab expressions",
+		Name:    "every",
+		Usage:   "Every command transles english to crontab expressions",
+		Suggest: true,
 		Flags: []cli.Flag{
 			&cli.StringFlag{
 				Name:    "config",
