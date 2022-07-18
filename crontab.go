@@ -12,32 +12,30 @@ const (
 	crontabCommand = "crontab"
 )
 
-type Crontab struct {
-	ConfigPath string
-	User       string
-}
-
-func (c *Crontab) WriteCrontab(items ...*Every) (string, error) {
-	crontab, err := c.read()
+func WriteCrontab(config *Config) error {
+	crontab, err := readCrontab()
 	if err != nil {
-		return "", err
+		return err
 	}
 
-	return c.writeCrontab(crontab, items...)
+	configPath, err := filepath.Abs(config.Path)
+	if err != nil {
+		return fmt.Errorf("can't get config absolute path: %v", err)
+	}
+
+	crontab, err = updateCrontab(crontab, configPath, config.Everies...)
+
+	return writeCrontab(crontab)
 }
 
-func (c *Crontab) writeCrontab(crontab string, items ...*Every) (string, error) {
-	configPath, err := filepath.Abs(c.ConfigPath)
-	if err != nil {
-		return "", err
-	}
+func updateCrontab(crontab string, configPath string, items ...*Every) (string, error) {
 
 	header := fmt.Sprintf("# Begin every generated jobs for %s", configPath)
 	footer := fmt.Sprintf("# End every generated jobs for %s", configPath)
 
 	reBlock, err := regexp.Compile(fmt.Sprintf(`(?m)^%s$(?:.*\n)+^%s$`, regexp.QuoteMeta(header), regexp.QuoteMeta(footer)))
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("crontab regex error: %v", err)
 	}
 
 	buf := &strings.Builder{}
@@ -67,17 +65,28 @@ func (c *Crontab) writeCrontab(crontab string, items ...*Every) (string, error) 
 	return crontab, nil
 }
 
-func (c *Crontab) read() (string, error) {
+func readCrontab() (string, error) {
 	args := []string{"-l"}
-
-	if c.User != "" {
-		args = append(args, "-u", c.User)
-	}
 
 	output, err := exec.Command(crontabCommand, args...).Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("can't read crontab: %v", err)
 	}
 
 	return string(output), nil
+}
+
+func writeCrontab(content string) error {
+	cmd := exec.Command(crontabCommand)
+	cmd.Stdin = strings.NewReader(content)
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("can't write crontab: %v", err)
+	}
+
+	return nil
+}
+
+func CleanCrontab() error {
+	return writeCrontab("")
 }
