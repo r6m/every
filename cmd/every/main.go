@@ -55,7 +55,7 @@ func main() {
 					configPath := ctx.String("config")
 					if exists(configPath) {
 						overwrite := false
-						prompmYesNo("existing Everyfile will be overwitten, are you sure?", &overwrite)
+						promptYesNo("existing Everyfile will be overwitten, are you sure?", &overwrite)
 
 						if overwrite {
 							os.Remove(configPath)
@@ -117,7 +117,7 @@ func main() {
 	}
 }
 
-// exists checks for file existance
+// exists checks for file existence
 func exists(name string) bool {
 	if _, err := os.Stat(name); errors.Is(err, fs.ErrNotExist) {
 		return false
@@ -125,8 +125,8 @@ func exists(name string) bool {
 	return true
 }
 
-// prompmYesNo performs a yes/no question
-func prompmYesNo(message string, v interface{}) error {
+// promptYesNo performs a yes/no question
+func promptYesNo(message string, v interface{}) error {
 	p := &survey.Confirm{
 		Message: message,
 	}
