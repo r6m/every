@@ -8,7 +8,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hashicorp/hcl"
+	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/gohcl"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 )
 
 // every minute
@@ -40,27 +42,34 @@ type Config struct {
 	Everies []*Every `hcl:"every,block"`
 }
 
+// Every block data
+type Every struct {
+	Every string `hcl:",label"`
+	User  string `hcl:"user"`
+	Run   string `hcl:"run"`
+}
+
 // Parse reads config file
 func Parse(name string) (*Config, error) {
 	bytes, err := os.ReadFile(name)
 	if err != nil {
-		return nil, fmt.Errorf("can't read config file '%s': %v", name, err)
+		return nil, fmt.Errorf("read config '%s': %v", name, err)
 	}
 
-	config := new(Config)
-	if err := hcl.Unmarshal(bytes, config); err != nil {
-		return nil, fmt.Errorf("can't parse file '%s': %v", name, err)
+	var diags hcl.Diagnostics
+	file, diags := hclsyntax.ParseConfig(bytes, name, hcl.Pos{Line: 1, Column: 1})
+	if diags.HasErrors() {
+		return nil, fmt.Errorf("parse config: %w", diags)
+	}
+
+	config := &Config{}
+	diags = gohcl.DecodeBody(file.Body, nil, config)
+	if diags.HasErrors() {
+		return nil, fmt.Errorf("parse config: %w", diags)
 	}
 
 	config.Path = name
 	return config, nil
-}
-
-// Every block data
-type Every struct {
-	Every string `hcl:"every"`
-	User  string `hcl:"user"`
-	Run   string `hcl:"run"`
 }
 
 // Cronjob returns a crontab expression
