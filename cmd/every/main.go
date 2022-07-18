@@ -99,7 +99,13 @@ func main() {
 				Name:  "clean",
 				Usage: "clean crontab",
 				Action: func(ctx *cli.Context) error {
-					return every.CleanCrontab()
+					configPath := ctx.String("config")
+					config, err := every.Parse(configPath)
+					if err != nil {
+						return err
+					}
+
+					return every.CleanCrontab(config)
 				},
 			},
 		},

@@ -87,6 +87,28 @@ func writeCrontab(content string) error {
 	return nil
 }
 
-func CleanCrontab() error {
-	return writeCrontab("")
+func CleanCrontab(config *Config) error {
+	crontab, err := readCrontab()
+	if err != nil {
+		return err
+	}
+
+	configPath, err := filepath.Abs(config.Path)
+	if err != nil {
+		return fmt.Errorf("can't get config absolute path: %v", err)
+	}
+
+	header := fmt.Sprintf("# Begin every generated jobs for %s", configPath)
+	footer := fmt.Sprintf("# End every generated jobs for %s", configPath)
+
+	reBlock, err := regexp.Compile(fmt.Sprintf(`(?m)^%s$(?:.*\n)+^%s$`, regexp.QuoteMeta(header), regexp.QuoteMeta(footer)))
+	if err != nil {
+		return fmt.Errorf("crontab regex error: %v", err)
+	}
+	matched := reBlock.MatchString(crontab)
+	if matched {
+		crontab = reBlock.ReplaceAllString(crontab, "")
+	}
+
+	return nil
 }
