@@ -2,6 +2,7 @@ package every
 
 import (
 	"fmt"
+	"log"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -79,7 +80,9 @@ func readCrontab() (string, error) {
 		return "", fmt.Errorf("can't read crontab: %v", err)
 	}
 
-	return string(output), nil
+	crontab := strings.Trim(string(output), "\n")
+
+	return crontab, nil
 }
 
 // writeCrontab writes crontab content using crontab command
@@ -114,9 +117,10 @@ func CleanCrontab(config *Config) error {
 		return fmt.Errorf("crontab regex error: %v", err)
 	}
 	matched := reBlock.MatchString(crontab)
+	log.Println("matched", matched)
 	if matched {
 		crontab = reBlock.ReplaceAllString(crontab, "")
 	}
 
-	return nil
+	return writeCrontab(crontab)
 }
