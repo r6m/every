@@ -28,8 +28,8 @@ every "hour in Jun on Sun,Fri" {
 ```
 
 ## TODO
-- [ ] `every` cmd to run commands
-- [ ] support Everyfile to generate crontab file (hcl)
+- [x] `every` cmd to run commands
+- [x] support Everyfile to generate crontab file (hcl)
 - [ ] read args to generate from input
 - [ ] run jobs as specific user
 - [x] update crontab from config
