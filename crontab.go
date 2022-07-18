@@ -2,7 +2,6 @@ package every
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
 	"path/filepath"
 	"regexp"
@@ -117,7 +116,6 @@ func CleanCrontab(config *Config) error {
 		return fmt.Errorf("crontab regex error: %v", err)
 	}
 	matched := reBlock.MatchString(crontab)
-	log.Println("matched", matched)
 	if matched {
 		crontab = reBlock.ReplaceAllString(crontab, "")
 	}
