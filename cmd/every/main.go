@@ -6,20 +6,20 @@ import (
 	"log"
 	"os"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/r6m/every"
 	"github.com/urfave/cli/v2"
 )
 
-var everyfileInit = `
-  every "day" {
-    user = "ubuntu"
-		run = "hello world"
-	}
+var everyfileInit = `every "day" {
+	user = "ubuntu"
+	run = "hello world"
+}
 
-	every "2 minutes at 12 am" {
-		user = "ubuntu"
-		run = "echo hello world"
-	}`
+every "2 minutes at 12 am" {
+	user = "ubuntu"
+	run = "echo hello world"
+}`
 
 type Config struct {
 	Everies []Every `hcl:"every,block"`
@@ -52,10 +52,15 @@ func main() {
 				Action: func(ctx *cli.Context) error {
 					configPath := ctx.String("config")
 					if exists(configPath) {
+						overwrite := false
+						prompmYesNo("existing Everyfile will be overwitten, are you sure?", &overwrite)
 
+						if overwrite {
+							os.Remove(configPath)
+						}
 					}
 
-					return nil
+					return os.WriteFile(configPath, []byte(everyfileInit), 0644)
 				},
 			}, {
 				Name:    "update",
@@ -96,4 +101,11 @@ func exists(name string) bool {
 		return false
 	}
 	return true
+}
+
+func prompmYesNo(message string, v interface{}) error {
+	p := &survey.Confirm{
+		Message: message,
+	}
+	return survey.AskOne(p, v)
 }
