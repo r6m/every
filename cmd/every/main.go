@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -66,19 +67,32 @@ func main() {
 				Name:    "update",
 				Aliases: []string{"u"},
 				Usage:   "update crontab",
+				Flags: []cli.Flag{
+					&cli.BoolFlag{
+						Name:  "dry-run",
+						Usage: "only print the output",
+						Value: false,
+					},
+				},
 				Action: func(ctx *cli.Context) error {
 					configPath := ctx.String("config")
-
 					config, err := every.Parse(configPath)
 					if err != nil {
 						return err
 					}
 
-					if err := every.WriteCrontab(config); err != nil {
-						return err
+					dryRun := ctx.Bool("dry-run")
+					if dryRun {
+						crontab, err := every.UpdateCrontab("", config)
+						if err != nil {
+							return err
+						}
+
+						fmt.Println(crontab)
+						return nil
 					}
 
-					return nil
+					return every.WriteCrontab(config)
 				},
 			},
 			{
