@@ -1,0 +1,9 @@
+every "day at 3 am" {
+	user = "ubuntu"
+	run = "gobackup perform -c /etc/gobackup/config.yaml"
+}
+
+every "2 minutes at 12 am" {
+	user = "ubuntu"
+	run = "echo hello world"
+}
