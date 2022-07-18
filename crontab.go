@@ -20,6 +20,9 @@ func WriteCrontab(config *Config) error {
 	}
 
 	crontab, err = UpdateCrontab(crontab, config)
+	if err != nil {
+		return err
+	}
 
 	return writeCrontab(crontab)
 }
